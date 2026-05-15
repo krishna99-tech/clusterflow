@@ -1,0 +1,14 @@
+[project]
+name = "testing"
+version = "0.1.0"
+description = "A minimal FastAPI application scaffold."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.22.0"
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"

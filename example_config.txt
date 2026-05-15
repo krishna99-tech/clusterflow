@@ -1,0 +1,31 @@
+-- ngnix.config--
+
+
+events {}
+
+http {
+
+    upstream fastapi_cluster {
+        server 192.168.0.120:8000;
+        server 192.168.0.11:8001;
+        
+        keepalive 16;
+    }
+
+    server {
+        listen 80;
+
+        location / {
+            proxy_pass http://fastapi_cluster;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 3s;
+            proxy_read_timeout 10s;
+            proxy_send_timeout 10s;
+            proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+        }
+    }
+}
