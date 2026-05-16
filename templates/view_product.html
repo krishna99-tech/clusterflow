@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Product - {{ product_id }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <a href="/" class="btn btn-secondary">← Back to Dashboard</a>
+</div>
+<div class="card product-card">
+    {% if product %}
+    <div class="product-detail">
+        <div class="product-image">
+            <div class="image-placeholder">📺</div>
+        </div>
+
+        <div class="product-info">
+            <div class="product-title">
+                <h2>{{ product.name }} <span class="muted">· {{ product.product_id }}</span></h2>
+                <div class="category">{{ product.category }}</div>
+            </div>
+
+            <div class="price-row">
+                <div class="price-badge">${{ "%.2f"|format(product.price) }}</div>
+                <div class="stock">In stock: <strong>{{ product.quantity }}</strong></div>
+            </div>
+
+            <div class="meta-list">
+                <div><strong>Created:</strong> {{ product.created_date }}</div>
+            </div>
+
+            <div class="product-description">
+                <h4>Description</h4>
+                <p>{{ product.description }}</p>
+            </div>
+
+            <div class="product-actions">
+                <a href="/" class="btn btn-secondary">← Back</a>
+
+                <form method="POST" action="/delete-product" onsubmit="return confirm('Are you sure you want to delete this product?');" style="display:inline-block;">
+                    <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                    <button type="submit" class="btn btn-danger">🗑️ Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card-body">
+        <div class="alert alert-warning">📭 Product not found.</div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Employee - {{ employee_id }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <a href="/" class="btn btn-secondary">← Back to Dashboard</a>
+</div>
+
+<div class="card">
+    <div class="card-header">👥 Employee Details: {{ employee_id }}</div>
+    <div class="card-body">
+        {% if employee %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                <div>
+                    <p><strong>Employee ID:</strong> {{ employee.employee_id }}</p>
+                    <p><strong>Name:</strong> {{ employee.name }}</p>
+                    <p><strong>Department:</strong> {{ employee.department }}</p>
+                    <p><strong>Position:</strong> {{ employee.position }}</p>
+                </div>
+                <div>
+                    <p><strong>Salary:</strong> ${{ "%.2f"|format(employee.salary) }}</p>
+                    <p><strong>Email:</strong> <a href="mailto:{{ employee.email }}">{{ employee.email }}</a></p>
+                    <p><strong>Hire Date:</strong> {{ employee.hire_date }}</p>
+                </div>
+            </div>
+
+            <form method="POST" action="/delete-employee" style="margin-top: 2rem;" onsubmit="return confirm('Are you sure you want to delete this employee?');">
+                <input type="hidden" name="employee_id" value="{{ employee.employee_id }}">
+                <button type="submit" class="btn btn-danger">🗑️ Delete Employee</button>
+            </form>
+        {% else %}
+            <div class="alert alert-warning">
+                📭 Employee not found.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}Business Management System - Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-actions">
+    <button class="btn btn-primary" onclick="exportProducts()">⬇️ Export CSV</button>
+    <button class="btn btn-secondary" onclick="showLatestProduct()">✨ Show Latest</button>
+    <button class="btn btn-warning" onclick="addSampleProduct()">➕ Add Sample</button>
+    <button class="btn btn-sm" onclick="refreshDashboard()">🔄 Refresh</button>
+</div>
+<div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('products')">📦 Products</button>
+    <button class="tab-btn" onclick="switchTab('employees')">👥 Employees</button>
+    <button class="tab-btn" onclick="switchTab('add-product')">➕ Add Product</button>
+    <button class="tab-btn" onclick="switchTab('add-employee')">➕ Add Employee</button>
+</div>
+
+<!-- Products Tab -->
+<div id="products" class="tab-content active">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Products</div>
+            <div class="stat-value">{{ total_products }}</div>
+        </div>
+        {% if latest_product %}
+        <div class="stat-card">
+            <div class="stat-label">Latest Product Price</div>
+            <div class="stat-value">${{ "%.2f"|format(latest_product.price) }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Stock Available</div>
+            <div class="stat-value">{{ latest_product.quantity }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if products %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Product ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Created Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td><strong>{{ product.product_id }}</strong></td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.category }}</td>
+                    <td>${{ "%.2f"|format(product.price) }}</td>
+                    <td>{{ product.quantity }}</td>
+                    <td>{{ product.created_date }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/product/view/{{ product.product_id }}" class="btn btn-primary btn-sm">View</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <h3>No Products Found</h3>
+        <p>Start by adding a new product to the system</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Employees Tab -->
+<div id="employees" class="tab-content">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Employees</div>
+            <div class="stat-value">{{ total_employees }}</div>
+        </div>
+        {% if latest_employee %}
+        <div class="stat-card">
+            <div class="stat-label">Latest Salary</div>
+            <div class="stat-value">${{ "%.2f"|format(latest_employee.salary) }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Department</div>
+            <div style="font-size: 1.1rem; color: #7f8c8d;">{{ latest_employee.department }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if employees %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Position</th>
+                    <th>Salary</th>
+                    <th>Email</th>
+                    <th>Hire Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                <tr>
+                    <td><strong>{{ employee.employee_id }}</strong></td>
+                    <td>{{ employee.name }}</td>
+                    <td>{{ employee.department }}</td>
+                    <td>{{ employee.position }}</td>
+                    <td>${{ "%.2f"|format(employee.salary) }}</td>
+                    <td>{{ employee.email }}</td>
+                    <td>{{ employee.hire_date }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/employees/{{ employee.employee_id }}" class="btn btn-primary btn-sm">View</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <h3>No Employees Found</h3>
+        <p>Start by adding a new employee to the system</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Product Tab -->
+<div id="add-product" class="tab-content">
+    <div class="form-container">
+        <h2>📦 Add New Product</h2>
+        <form method="POST" action="/add-product">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="product_id">Product ID *</label>
+                    <input type="text" id="product_id" name="product_id" required placeholder="e.g., PRD-001">
+                </div>
+                <div class="form-group">
+                    <label for="name">Product Name *</label>
+                    <input type="text" id="name" name="name" required placeholder="e.g., Laptop">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <input type="text" id="category" name="category" required placeholder="e.g., Electronics">
+                </div>
+                <div class="form-group">
+                    <label for="price">Price ($) *</label>
+                    <input type="number" id="price" name="price" required step="0.01" placeholder="999.99">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="quantity">Quantity in Stock *</label>
+                    <input type="number" id="quantity" name="quantity" required step="1" placeholder="50">
+                </div>
+            </div>
+
+            <div class="form-group full">
+                <label for="description">Description *</label>
+                <textarea id="description" name="description" required placeholder="Enter product description"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="created_date">Created Date *</label>
+                <input type="datetime-local" id="created_date" name="created_date" required>
+            </div>
+
+            <button type="submit" class="btn btn-success">➕ Add Product</button>
+        </form>
+    </div>
+</div>
+
+<!-- Add Employee Tab -->
+<div id="add-employee" class="tab-content">
+    <div class="form-container">
+        <h2>👥 Add New Employee</h2>
+        <form method="POST" action="/add-employee">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="employee_id">Employee ID *</label>
+                    <input type="text" id="employee_id" name="employee_id" required placeholder="e.g., EMP-001">
+                </div>
+                <div class="form-group">
+                    <label for="emp_name">Full Name *</label>
+                    <input type="text" id="emp_name" name="name" required placeholder="e.g., John Doe">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="department">Department *</label>
+                    <input type="text" id="department" name="department" required placeholder="e.g., Sales">
+                </div>
+                <div class="form-group">
+                    <label for="position">Position *</label>
+                    <input type="text" id="position" name="position" required placeholder="e.g., Manager">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="salary">Salary ($) *</label>
+                    <input type="number" id="salary" name="salary" required step="0.01" placeholder="50000">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required placeholder="john@example.com">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="hire_date">Hire Date *</label>
+                <input type="datetime-local" id="hire_date" name="hire_date" required>
+            </div>
+
+            <button type="submit" class="btn btn-success">➕ Add Employee</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Dashboard helpers: export, latest, add sample, refresh
+    async function exportProducts() {
+        try {
+            const res = await fetch('/products');
+            const data = await res.json();
+            if (!data || data.length === 0) { alert('No products to export'); return; }
+
+            const keys = ['product_id','name','category','price','quantity','description','created_date'];
+            const csvRows = [];
+            csvRows.push(keys.join(','));
+            data.forEach(item => {
+                const row = keys.map(k => '"' + ((item[k]===undefined||item[k]===null)?'':String(item[k]).replace(/"/g,'""')) + '"');
+                csvRows.push(row.join(','));
+            });
+
+            const csv = csvRows.join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'products_export.csv';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            alert('Export failed: ' + e.message);
+        }
+    }
+
+    async function showLatestProduct() {
+        try {
+            const res = await fetch('/api/latest-product');
+            const product = await res.json();
+            const modal = document.getElementById('latest-modal');
+            const content = document.getElementById('latest-modal-content');
+            if (!product || Object.keys(product).length === 0) {
+                content.innerHTML = '<p>No product available.</p>';
+            } else {
+                content.innerHTML = `
+                    <h3>${product.name} <small class="muted">${product.product_id}</small></h3>
+                    <p><strong>Category:</strong> ${product.category} &nbsp; <strong>Price:</strong> $${parseFloat(product.price).toFixed(2)}</p>
+                    <p><strong>Quantity:</strong> ${product.quantity}</p>
+                    <p>${product.description || ''}</p>
+                `;
+            }
+            modal.classList.add('open');
+        } catch (e) {
+            alert('Failed to load latest product: ' + e.message);
+        }
+    }
+
+    async function addSampleProduct() {
+        if (!confirm('Add a sample product to the database?')) return;
+        const now = new Date();
+        const sample = {
+            product_id: 'PRD-SAMPLE-' + now.getTime(),
+            name: 'Sample TV',
+            category: 'Home Appliances',
+            price: 10000.0,
+            quantity: 50,
+            description: 'logic television',
+            created_date: now.toISOString()
+        };
+        try {
+            const res = await fetch('/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sample)
+            });
+            if (res.ok) {
+                alert('Sample product added');
+                location.reload();
+            } else {
+                const txt = await res.text();
+                alert('Failed to add sample: ' + txt);
+            }
+        } catch (e) {
+            alert('Request failed: ' + e.message);
+        }
+    }
+
+    function refreshDashboard() {
+        location.reload();
+    }
+
+    // Modal close handler
+    document.addEventListener('click', function(e){
+        const modal = document.getElementById('latest-modal');
+        if (!modal) return;
+        if (e.target.classList.contains('modal-close') || e.target === modal) {
+            modal.classList.remove('open');
+        }
+    });
+
+    function switchTab(tabName) {
+        // Hide all tabs
+        const tabs = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => tab.classList.remove('active'));
+
+        // Remove active class from all buttons
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+
+        // Show selected tab
+        document.getElementById(tabName).classList.add('active');
+
+        // Add active class to clicked button
+        event.target.classList.add('active');
+    }
+
+    // Set current datetime as default for form inputs
+    document.addEventListener('DOMContentLoaded', function() {
+        const now = new Date();
+        const isoString = now.toISOString().slice(0, 16);
+        
+        const createdDateInput = document.getElementById('created_date');
+        if (createdDateInput) {
+            createdDateInput.value = isoString;
+        }
+        
+        const hireDateInput = document.getElementById('hire_date');
+        if (hireDateInput) {
+            hireDateInput.value = isoString;
+        }
+    });
+</script>
+
+<!-- Latest product modal -->
+<div id="latest-modal" class="modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <button class="modal-close">✖</button>
+        <div id="latest-modal-content"></div>
+    </div>
+</div>
+{% endblock %}
